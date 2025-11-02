@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detection History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Detection History</h1>
+        <table>
+            <tr><th>User</th><th>Emotion</th><th>Timestamp</th></tr>
+            {% for user, emotion, timestamp in detections %}
+            <tr><td>{{ user }}</td><td>{{ emotion }}</td><td>{{ timestamp }}</td></tr>
+            {% endfor %}
+        </table>
+        <a href="/">Back to Home</a>
+    </div>
+</body>
+</html>

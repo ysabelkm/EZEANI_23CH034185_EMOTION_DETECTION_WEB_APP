@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Detection Web App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Emotion Detection AI</h1>
+        <p>Upload an image or use webcam to detect emotions!</p>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="text" id="username" placeholder="Your Name (optional)" maxlength="50">
+            <input type="file" id="file" accept="image/*" capture="environment">
+            <button type="submit">Upload & Detect</button>
+        </form>
+        
+        <div id="uploadResult"></div>
+        
+        <h2>Or Use Webcam</h2>
+        <form id="webcamForm">
+            <input type="text" id="webcamUsername" placeholder="Your Name (optional)" maxlength="50">
+            <button type="button" id="startWebcam">Start Webcam</button>
+            <button type="button" id="captureBtn" style="display:none;">Capture & Detect</button>
+        </form>
+        
+        <video id="video" width="640" height="480" autoplay style="display:none;"></video>
+        <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+        
+        <div id="webcamResult"></div>
+        
+        <a href="/history">View Detection History</a>
+    </div>
+
+    <script>
+        // Webcam
+        let stream;
+        document.getElementById('startWebcam').onclick = async () => {
+            const video = document.getElementById('video');
+            video.style.display = 'block';
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            document.getElementById('captureBtn').style.display = 'inline';
+        };
+
+        document.getElementById('captureBtn').onclick = () => {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            canvas.style.display = 'block';
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const dataURL = canvas.toDataURL('image/jpeg');
+            
+            const formData = new FormData();
+            formData.append('image', dataURL);
+            formData.append('username', document.getElementById('webcamUsername').value || 'Anonymous');
+            
+            fetch('/capture', {
+                method: 'POST',
+                body: formData
+            }).then(res => res.json()).then(data => {
+                if (data.emotion) {
+                    document.getElementById('webcamResult').innerHTML = `
+                        <h3>Detected: ${data.emotion}</h3>
+                        <img src="${data.image_path}" alt="Captured">
+                    `;
+                } else {
+                    document.getElementById('webcamResult').innerHTML = '<p>Error: ' + data.error + '</p>';
+                }
+            });
+        };
+
+        // Upload
+        document.getElementById('uploadForm').onsubmit = (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('file', document.getElementById('file').files[0]);
+            formData.append('username', document.getElementById('username').value || 'Anonymous');
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(res => res.json()).then(data => {
+                const result = document.getElementById('uploadResult');
+                if (data.emotion) {
+                    result.innerHTML = `
+                        <h3>Detected: ${data.emotion}</h3>
+                        <img src="/${data.image_path}" alt="Uploaded" style="max-width:300px;">
+                    `;
+                } else {
+                    result.innerHTML = '<p>Error: ' + (data.error || 'Unknown') + '</p>';
+                }
+            });
+        };
+    </script>
+</body>
+</html>

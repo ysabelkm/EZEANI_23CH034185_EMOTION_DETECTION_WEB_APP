@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+venv/
+.env
+emotion_detector_v1.h5

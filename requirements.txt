@@ -1,7 +1,9 @@
 Flask==2.3.3
 tensorflow==2.20.0
+numpy==1.25.2
 opencv-python-headless==4.10.0.84
-numpy==1.24.3
 Pillow==10.4.0
 Werkzeug==3.0.1
 gunicorn==21.2.0
+setuptools>=65.5.1
+wheel
